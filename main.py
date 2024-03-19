@@ -46,15 +46,24 @@ naver_image_url = uploader.return_naver_image_url(image_url)
 # 상품 정보 네이버 업로드
 
 # 본문 데이터 변수
-leafCategoryId = "" # 카테고리 ID
+leafCategoryId = "50000003" # 카테고리 ID
 importer = productInfo['제조사'] # 수입사
 sellerBarcode = productInfo['ASIN'] # ASIN
-productInfoProvidedNoticeType = "" # 상품정보제공고시 유형
 
 salePrice = 0 # 판매가
 # 판매가 계산기 만들것
 
 
 # 상품 추가
-product_instance = AddProductToNSS(telephone_number, bearer_token, productTitle, leafCategoryId, naver_image_url, salePrice, importer, sellerBarcode, productInfoProvidedNoticeType, html_content)
+product_instance = AddProductToNSS(
+  telephoneNumber=telephone_number,
+  bearer_token= bearer_token,
+  name=productTitle,
+  leafCategoryId=leafCategoryId,
+  imageUrl=naver_image_url,
+  salePrice=salePrice,
+  importer=importer,
+  sellerBarcode=sellerBarcode,
+  html_content=html_content
+)
 product_instance.add_product()
