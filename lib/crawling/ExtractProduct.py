@@ -16,7 +16,8 @@ class ExtractProduct:
   def getPrice(self):
     price_tag = self.soup.find("span", class_="a-offscreen")
     price = price_tag.text.strip()
-
+    price = float(price.replace("$", ""))
+    
     return price
   
   # 제품 사진
