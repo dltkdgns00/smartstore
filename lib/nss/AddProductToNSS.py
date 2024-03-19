@@ -56,7 +56,7 @@ class AddProductToNSS:
                     "productInfoProvidedNotice": {
                         "productInfoProvidedNoticeType": self.productInfoProvidedNoticeType,
                         self.productInfoProvidedNoticeType: {
-                            "returnCostREason": "",
+                            "returnCostReason": "",
                             "noRefundReason": "",
                             "qualityAssuranceStandard": "",
                             "compensationProcedure": "",
