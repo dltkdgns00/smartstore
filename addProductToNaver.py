@@ -11,6 +11,15 @@ bearer_token = os.getenv('BEARER_TOKEN')
 # 네이버 API 엔드포인트
 url = "https://api.commerce.naver.com/external/v2/products"
 
+# 본문 데이터 변수
+name = "" # 상품명
+leafCategoryId = "" # 카테고리 ID
+imageUrl = "" # 상품 이미지 URL
+salePrice = 0 # 판매가
+importer = "" # 수입사
+sellerBarcode = "" # ASIN
+productInfoProvidedNoticeType = "" # 상품정보제공고시 유형
+
 # HTML 콘텐츠
 html_content = """
 <div class="aplus-v2 desktop celwidget" cel_widget_id="aplus" data-csa-c-id="at25eo-21ss7i-fl20j7-vjyt27" data-cel-widget="aplus">
@@ -1050,15 +1059,15 @@ data = {
   "originProduct": {
     "statusType": "SALE",
     "saleType": "NEW",
-    "leafCategoryId": "50003120",
-    "name": "앵커 USB C to USB C 케이블",
+    "leafCategoryId": leafCategoryId,
+    "name": name,
     "detailContent": html_content,
     "images": {
       "representativeImage": {
-         "url": "http://shop1.phinf.naver.net/20240319_287/1710792167833Ywjwb_JPEG/38700752818907409_2001105597.jpg"},
+         "url": imageUrl},
       # "optionalImages": ["추가 이미지 1 URL", "추가 이미지 2 URL"]
     },
-    "salePrice": 21900,
+    "salePrice": salePrice,
     "stockQuantity": 100,
     "deliveryInfo": {
       "deliveryType": "DELIVERY",
@@ -1079,12 +1088,12 @@ data = {
       },
       "originAreaInfo": {
         "originAreaCode": "0204000",
-        "importer": "앵커",
+        "importer": importer,
       },
       "minorPurchasable": True,
       "productInfoProvidedNotice": {
-          "productInfoProvidedNoticeType": "OFFICE_APPLIANCES",
-          "officeAppliances": {
+          "productInfoProvidedNoticeType": productInfoProvidedNoticeType,
+          productInfoProvidedNoticeType: { # 미정
               "returnCostREason": "",
               "noRefundReason": "",
               "qualityAssuranceStandard":"",
@@ -1103,7 +1112,7 @@ data = {
       },
       "sellerCodeInfo": {
           "sellerManagementCode": "https://www.amazon.com/"
-          ,"sellerBarcode": "B088NRLMPV"
+          ,"sellerBarcode": sellerBarcode
       },
       "certificationTargetExcludeContent": {
           "kcExemptionType": "OVERSEAS",
