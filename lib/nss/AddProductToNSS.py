@@ -2,7 +2,7 @@ import requests
 import json
 
 class AddProductToNSS:
-    def __init__(self, telephoneNumber, bearer_token, name, leafCategoryId, imageUrl, salePrice, importer, sellerBarcode, html_content):
+    def __init__(self, telephoneNumber, bearer_token, name, leafCategoryId, imageUrl, salePrice, importer, sellerBarcode, productInfoProvidedNoticeType, html_content):
         self.telephoneNumber = telephoneNumber
         self.bearer_token = bearer_token
         self.name = name
@@ -11,6 +11,7 @@ class AddProductToNSS:
         self.salePrice = salePrice
         self.importer = importer
         self.sellerBarcode = sellerBarcode
+        self.productInfoProvidedNoticeType = productInfoProvidedNoticeType
         self.html_content = html_content
 
     def add_product(self):
@@ -53,8 +54,8 @@ class AddProductToNSS:
                     },
                     "minorPurchasable": True,
                     "productInfoProvidedNotice": {
-                        "productInfoProvidedNoticeType": "OFFICE_APPLIANCES",
-                        "officeAppliances": {
+                        "productInfoProvidedNoticeType": self.productInfoProvidedNoticeType,
+                        self.productInfoProvidedNoticeType: {
                             "returnCostReason": "",
                             "noRefundReason": "",
                             "qualityAssuranceStandard": "",
