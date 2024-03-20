@@ -83,7 +83,7 @@ class AddProductToNSS:
             },
             "smartstoreChannelProduct": {
                 "naverShoppingRegistration": True,
-                "channelProductDisplayStatusType": "SUSPENSION"
+                "channelProductDisplayStatusType": "ON"
             }
         }
 

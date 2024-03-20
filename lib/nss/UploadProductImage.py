@@ -25,8 +25,6 @@ class ImageUploader:
             files = {'imageFiles': ('filename.jpg', image_bytes, 'image/jpeg')}
             response = requests.post(url, headers=headers, files=files)
 
-            print(response.text)
-
             # JSON 형태로 변환
             data = json.loads(response.text)
 

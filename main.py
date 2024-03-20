@@ -98,8 +98,8 @@ def main(amazon_url, productTitle, leafCategoryId):
   smartstoreChannelProductNo =  product_instance.add_product()['smartstoreChannelProductNo']
 
   # 파일에 originProductNo와 amazon_url 저장
-  with open('아마존url저장.txt', 'w') as f:
-    f.write(smartstoreChannelProductNo)
+  with open('아마존url저장.txt', 'a') as f:
+    f.write(f'{smartstoreChannelProductNo}')
     f.write(' : ')
     f.write(amazon_url)
     f.write('\n')
