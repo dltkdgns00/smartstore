@@ -1,16 +1,14 @@
+import os
 import time
 from dotenv import load_dotenv
-import os
-import sys
-import requests
-
+from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+
 from lib.crawling.Calculator import Calculator
 from lib.nss.UploadProductImage import ImageUploader
 from lib.nss.CreateESign import createESign
 from lib.nss.AddProductToNSS import AddProductToNSS
-from bs4 import BeautifulSoup
 from lib.crawling.ExtractProduct import ExtractProduct
 from lib.crawling.ProductDescription import ProductDescription
 
@@ -18,14 +16,14 @@ chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
 
-amazon_url = sys.argv[1]
-# amazon_url = "https://www.amazon.com/Elgato-Stream-Deck-MK-2-Controller/dp/B09738CV2G?ref_=Oct_d_omwf_d_172456_4&pd_rd_w=Pbx0C&content-id=amzn1.sym.e1dd8637-4da2-4f16-81ea-1bd7ea3eed24&pf_rd_p=e1dd8637-4da2-4f16-81ea-1bd7ea3eed24&pf_rd_r=FK71VJX8X1YFJAFQZ8BQ&pd_rd_wg=GTBfu&pd_rd_r=b3e2a08e-8c62-4d1f-8eb3-c3a0214f1d74&pd_rd_i=B09738CV2G&th=1"
+# amazon_url = sys.argv[1]
+amazon_url = "https://www.amazon.com/Hagibis-3-5inch-Temperature-Electronic-Floating/dp/B0CP3WD37X?ref_=ast_sto_dp"
 
-productTitle = sys.argv[2]
-# productTitle = "엘가토 스트림 덱 MK.2 컨트롤러" # 제품명
+# productTitle = sys.argv[2]
+productTitle = "하기비스 미니 PC 모니터 USB C 도킹스테이션 " # 제품명
 
-leafCategoryId = sys.argv[3]
-# leafCategoryId = "50002933" # 카테고리 ID
+# leafCategoryId = sys.argv[3]
+leafCategoryId = "50002776" # 카테고리 ID
 
 load_dotenv()
 
@@ -104,4 +102,11 @@ product_instance = AddProductToNSS(
   sellerBarcode=sellerBarcode,
   html_content=html_content
 )
-product_instance.add_product()
+smartstoreChannelProductNo =  product_instance.add_product().json()['smartstoreChannelProductNo']
+
+# 파일에 originProductNo와 amazon_url 저장
+with open('아마존url저장.txt', 'w') as f:
+  f.write(smartstoreChannelProductNo)
+  f.write(' : ')
+  f.write(amazon_url)
+  f.write('\n')

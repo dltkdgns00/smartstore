@@ -99,6 +99,7 @@ class AddProductToNSS:
         if response.status_code == 200:
             # 성공적인 응답 처리
             print("성공:", response.json())
+            return response.json()
         else:
             # 오류 응답 처리
             print("오류:", response.status_code, response.text)
