@@ -95,7 +95,7 @@ def main(amazon_url, productTitle, leafCategoryId):
     sellerBarcode=sellerBarcode,
     html_content=html_content
   )
-  smartstoreChannelProductNo =  product_instance.add_product().json()['smartstoreChannelProductNo']
+  smartstoreChannelProductNo =  product_instance.add_product()['smartstoreChannelProductNo']
 
   # 파일에 originProductNo와 amazon_url 저장
   with open('아마존url저장.txt', 'w') as f:
