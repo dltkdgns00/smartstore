@@ -17,13 +17,13 @@ chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
 
 # amazon_url = sys.argv[1]
-amazon_url = "https://www.amazon.com/Hagibis-3-5inch-Temperature-Electronic-Floating/dp/B0CP3WD37X?ref_=ast_sto_dp"
+amazon_url = "https://www.amazon.com/Hagibis-Nintendo-Rotating-Magnetic-Cartridge/dp/B0CF1RW4LT?ref_=ast_sto_dp"
 
 # productTitle = sys.argv[2]
-productTitle = "하기비스 미니 PC 모니터 USB C 도킹스테이션 " # 제품명
+productTitle = "하기비스 닌텐도 스위치 마그네틱 카트리지" # 제품명
 
 # leafCategoryId = sys.argv[3]
-leafCategoryId = "50002776" # 카테고리 ID
+leafCategoryId = "50002771" # 카테고리 ID
 
 load_dotenv()
 

@@ -22,7 +22,7 @@ class ExtractProduct:
   
   # 제품 가격
   def getPrice(self):
-    price_tag = self.soup.find("span", class_="a-offscreen")
+    price_tag = self.soup.find("span", class_="a-price-whole")
     price = price_tag.text.strip()
     price = float(price.replace("$", ""))
     
