@@ -3,14 +3,22 @@ class ExtractProduct:
   def __init__(self, soup):
       self.soup = soup
 
+  @staticmethod
+  def escapeUnicode(product_info):
+    cleaned_product_info = {}
+    for key, value in product_info.items():
+        cleaned_key = key.replace('\u200e', '')
+        cleaned_value = value.replace('\u200e', '')
+        cleaned_product_info[cleaned_key] = cleaned_value
+    return cleaned_product_info
+
   # 제품명
   def getTitle(self):
-      product_title = self.soup.find("title").text
-      product_name = product_title.split("Amazon.com: ")[1]
-      product_name = product_name.split(" :")[0]
+    product_title = self.soup.find("title").text
+    print(product_title)
+    product_name = product_title.split(": ")[1]
 
-      return product_name
-      
+    return product_name
   
   # 제품 가격
   def getPrice(self):
@@ -55,10 +63,14 @@ class ExtractProduct:
               elif key == "Manufacturer":
                   manufacturer = value
 
-      return {
+      product_info = {
           "제품 크기": product_dimensions,
           "품목 무게": item_weight,
           "ASIN": asin,
           "품목 모델 번호": item_model_number,
           "제조사": manufacturer
       }
+
+      product_info = self.escapeUnicode(product_info)
+
+      return product_info
