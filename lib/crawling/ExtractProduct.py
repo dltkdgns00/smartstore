@@ -1,3 +1,4 @@
+import re
 
 class ExtractProduct:
   def __init__(self, soup):
