@@ -17,10 +17,10 @@ chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
 
 # amazon_url = sys.argv[1]
-amazon_url = "https://www.amazon.com/Hagibis-3-5inch-Temperature-Electronic-Floating/dp/B0CP3WD37X?ref_=ast_sto_dp"
+amazon_url = "https://www.amazon.com/Hagibis-Nintendo-Rotating-Magnetic-Cartridge/dp/B0CF1RW4LT?ref_=ast_sto_dp&th=1"
 
 # productTitle = sys.argv[2]
-productTitle = "하기비스 미니 PC 모니터 USB C 도킹스테이션 " # 제품명
+productTitle = "Nintendo Switch, PS Vita용 Hagibis 게임 보관 케이스" # 제품명
 
 # leafCategoryId = sys.argv[3]
 leafCategoryId = "50002776" # 카테고리 ID
@@ -43,7 +43,7 @@ with webdriver.Chrome(options=chrome_options) as driver:
   soup = BeautifulSoup(driver.page_source, "html.parser")
 
 extractProduct = ExtractProduct(soup)
-
+    
 # productTitle = extractProduct.getTitle() # 제품명
 image_url = extractProduct.getImage() # 제품이미지
 productPrice = extractProduct.getPrice() # 제품가격
@@ -102,7 +102,7 @@ product_instance = AddProductToNSS(
   sellerBarcode=sellerBarcode,
   html_content=html_content
 )
-smartstoreChannelProductNo =  product_instance.add_product().json()['smartstoreChannelProductNo']
+smartstoreChannelProductNo = product_instance.add_product().json()['smartstoreChannelProductNo']
 
 # 파일에 originProductNo와 amazon_url 저장
 with open('아마존url저장.txt', 'w') as f:
