@@ -18,8 +18,14 @@ chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
 
-# amazon_url = sys.argv[1]
-amazon_url = "https://www.amazon.com/Elgato-Stream-Deck-MK-2-Controller/dp/B09738CV2G?ref_=Oct_d_omwf_d_172456_4&pd_rd_w=Pbx0C&content-id=amzn1.sym.e1dd8637-4da2-4f16-81ea-1bd7ea3eed24&pf_rd_p=e1dd8637-4da2-4f16-81ea-1bd7ea3eed24&pf_rd_r=FK71VJX8X1YFJAFQZ8BQ&pd_rd_wg=GTBfu&pd_rd_r=b3e2a08e-8c62-4d1f-8eb3-c3a0214f1d74&pd_rd_i=B09738CV2G&th=1"
+amazon_url = sys.argv[1]
+# amazon_url = "https://www.amazon.com/Elgato-Stream-Deck-MK-2-Controller/dp/B09738CV2G?ref_=Oct_d_omwf_d_172456_4&pd_rd_w=Pbx0C&content-id=amzn1.sym.e1dd8637-4da2-4f16-81ea-1bd7ea3eed24&pf_rd_p=e1dd8637-4da2-4f16-81ea-1bd7ea3eed24&pf_rd_r=FK71VJX8X1YFJAFQZ8BQ&pd_rd_wg=GTBfu&pd_rd_r=b3e2a08e-8c62-4d1f-8eb3-c3a0214f1d74&pd_rd_i=B09738CV2G&th=1"
+
+productTitle = sys.argv[2]
+# productTitle = "엘가토 스트림 덱 MK.2 컨트롤러" # 제품명
+
+leafCategoryId = sys.argv[3]
+# leafCategoryId = "50002933" # 카테고리 ID
 
 load_dotenv()
 
@@ -33,20 +39,14 @@ eSign_instance = createESign(client_id, client_secret)
 bearer_token = eSign_instance.get_token()
 
 # 크롤링
-response = requests.get(amazon_url)
-if response.status_code != 200:
-  print(response.text)
-  print("Amazon URL이 올바르지 않습니다.")
-  sys.exit()
-  
 with webdriver.Chrome(options=chrome_options) as driver:
-    driver.get(amazon_url)
-    time.sleep(8)
-    soup = BeautifulSoup(driver.page_source, "html.parser")
+  driver.get(amazon_url)
+  time.sleep(8)
+  soup = BeautifulSoup(driver.page_source, "html.parser")
 
 extractProduct = ExtractProduct(soup)
 
-productTitle = extractProduct.getTitle() # 제품명
+# productTitle = extractProduct.getTitle() # 제품명
 image_url = extractProduct.getImage() # 제품이미지
 productPrice = extractProduct.getPrice() # 제품가격
 productInfo = extractProduct.getInfo()  # 제품정보
@@ -60,7 +60,7 @@ uploader = ImageUploader(bearer_token)
 naver_image_url = uploader.return_naver_image_url(image_url)
 
 # 본문 데이터 변수
-leafCategoryId = "50000003" # 카테고리 ID
+# leafCategoryId = "50000003" # 카테고리 ID
 importer = productInfo['제조사'] # 수입사
 sellerBarcode = productInfo['ASIN'] # ASIN
 

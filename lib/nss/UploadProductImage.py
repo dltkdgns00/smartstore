@@ -1,3 +1,4 @@
+import json
 import requests
 from io import BytesIO
 from dotenv import load_dotenv
@@ -24,6 +25,14 @@ class ImageUploader:
             files = {'imageFiles': ('filename.jpg', image_bytes, 'image/jpeg')}
             response = requests.post(url, headers=headers, files=files)
 
-            return response.text
+            print(response.text)
+
+            # JSON 형태로 변환
+            data = json.loads(response.text)
+
+            # 'images' 리스트에서 첫 번째 항목의 'url' 값을 추출
+            urls = [image['url'] for image in data['images']]
+
+            return urls[0]
         else:
             return "이미지 다운로드 실패"

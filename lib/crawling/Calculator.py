@@ -45,7 +45,9 @@ class Calculator:
     def calculate_ssp(self, dimensions, tax, vat):
         # 스마트스토어 판매가
         smart_store_price = int(((self.price + self.profit + dimensions) * self.exchange_rate + tax + vat) / (1-0.05))
-        return smart_store_price
+        # 반올림하여 1의 자리를 0으로 만들기
+        smart_store_price_rounded = round(smart_store_price / 10) * 10
+        return smart_store_price_rounded
 
 # # 네이버수수료
 # naver_fee = int(smart_store_price * 0.05)
