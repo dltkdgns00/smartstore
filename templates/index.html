@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Amazon Product to Naver Smart Store</title>
+  <!-- 부트스트랩 CSS 추가 -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+
+<body>
+  <div class="container">
+    <h2 class="mt-5">정보 입력</h2>
+    <form action="/submit" method="post" class="mt-3">
+      <div class="form-group">
+        <label for="amazon_url">Amazon URL:</label>
+        <input type="text" class="form-control" id="amazon_url" name="amazon_url">
+      </div>
+      <div class="form-group">
+        <label for="productTitle">Product Title:</label>
+        <input type="text" class="form-control" id="productTitle" name="productTitle">
+      </div>
+      <div class="form-group">
+        <label for="leafCategoryID">Leaf Category ID:</label>
+        <input type="text" class="form-control" id="leafCategoryID" name="leafCategoryID">
+      </div>
+      <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+  </div>
+
+  <!-- 부트스트랩 JS, Popper.js, and jQuery 추가 -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+
+</html>

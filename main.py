@@ -1,5 +1,6 @@
 import os
 import time
+import sys
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 from selenium import webdriver
@@ -16,97 +17,95 @@ chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
 
-# amazon_url = sys.argv[1]
-amazon_url = "https://www.amazon.com/Hagibis-Nintendo-Rotating-Magnetic-Cartridge/dp/B0CF1RW4LT?ref_=ast_sto_dp&th=1"
+def main(amazon_url, productTitle, leafCategoryId):
+  load_dotenv()
 
-# productTitle = sys.argv[2]
-productTitle = "Nintendo Switch, PS Vita용 Hagibis 게임 보관 케이스" # 제품명
+  # 환경 변수 불러오기
+  client_id = os.getenv('CLIENT_ID')
+  client_secret = os.getenv('CLIENT_SECRET')
+  telephone_number = os.getenv('TELEPHONE_NUMBER')
 
-# leafCategoryId = sys.argv[3]
-leafCategoryId = "50002776" # 카테고리 ID
+  # 토큰 요청
+  eSign_instance = createESign(client_id, client_secret)
+  bearer_token = eSign_instance.get_token()
 
-load_dotenv()
+  # 크롤링
+  with webdriver.Chrome(options=chrome_options) as driver:
+    driver.get(amazon_url)
+    time.sleep(8)
+    soup = BeautifulSoup(driver.page_source, "html.parser")
 
-# 환경 변수 불러오기
-client_id = os.getenv('CLIENT_ID')
-client_secret = os.getenv('CLIENT_SECRET')
-telephone_number = os.getenv('TELEPHONE_NUMBER')
+  extractProduct = ExtractProduct(soup)
 
-# 토큰 요청
-eSign_instance = createESign(client_id, client_secret)
-bearer_token = eSign_instance.get_token()
+  # productTitle = extractProduct.getTitle() # 제품명
+  image_url = extractProduct.getImage() # 제품이미지
+  productPrice = extractProduct.getPrice() # 제품가격
+  productInfo = extractProduct.getInfo()  # 제품정보
 
-# 크롤링
-with webdriver.Chrome(options=chrome_options) as driver:
-  driver.get(amazon_url)
-  time.sleep(8)
-  soup = BeautifulSoup(driver.page_source, "html.parser")
+  productDescription = ProductDescription(amazon_url)
+  html_content = productDescription.generateHtml()
 
-extractProduct = ExtractProduct(soup)
-    
-# productTitle = extractProduct.getTitle() # 제품명
-image_url = extractProduct.getImage() # 제품이미지
-productPrice = extractProduct.getPrice() # 제품가격
-productInfo = extractProduct.getInfo()  # 제품정보
+  # 이미지 네이버 업로드 후 URL 받아오기
+  uploader = ImageUploader(bearer_token)
 
-productDescription = ProductDescription(amazon_url)
-html_content = productDescription.generateHtml()
+  naver_image_url = uploader.return_naver_image_url(image_url)
 
-# 이미지 네이버 업로드 후 URL 받아오기
-uploader = ImageUploader(bearer_token)
+  # 본문 데이터 변수
+  # leafCategoryId = "50000003" # 카테고리 ID
+  importer = productInfo['제조사'] # 수입사
+  sellerBarcode = productInfo['ASIN'] # ASIN
 
-naver_image_url = uploader.return_naver_image_url(image_url)
+  # 판매이익
+  profit = round(productPrice * 0.15, 2)
 
-# 본문 데이터 변수
-# leafCategoryId = "50000003" # 카테고리 ID
-importer = productInfo['제조사'] # 수입사
-sellerBarcode = productInfo['ASIN'] # ASIN
+  # 국제배송비
+  weight = productInfo['품목 무게'].split()
+  weight_value = weight[0]
+  weight_unit = weight[1]
 
-# 판매이익
-profit = round(productPrice * 0.15, 2)
+  calculator = Calculator(
+    weight_unit=weight_unit,
+    price=productPrice,
+    profit=profit
+  )
 
-# 국제배송비
-weight = productInfo['품목 무게'].split()
-weight_value = weight[0]
-weight_unit = weight[1]
+  dimensions = eval(productInfo['제품 크기'].replace(' ', '').replace('x', '*'))
+  dimensions = calculator.calculate_lb(dimensions)
 
-calculator = Calculator(
-  weight_unit=weight_unit,
-  price=productPrice,
-  profit=profit
-)
+  tax, vat = calculator.calculate_taxAndvat(dimensions)
 
-dimensions = eval(productInfo['제품 크기'].replace(' ', '').replace('x', '*'))
-dimensions = calculator.calculate_lb(dimensions)
+  # 스마트스토어 판매가
+  smart_store_price = calculator.calculate_ssp(
+    dimensions=dimensions,
+    tax=tax,
+    vat=vat
+  )
 
-tax, vat = calculator.calculate_taxAndvat(dimensions)
+  salePrice = smart_store_price
 
-# 스마트스토어 판매가
-smart_store_price = calculator.calculate_ssp(
-  dimensions=dimensions,
-  tax=tax,
-  vat=vat
-)
+  # 상품 추가
+  product_instance = AddProductToNSS(
+    telephoneNumber=telephone_number,
+    bearer_token= bearer_token,
+    name=productTitle,
+    leafCategoryId=leafCategoryId,
+    imageUrl=naver_image_url,
+    salePrice=salePrice,
+    importer=importer,
+    sellerBarcode=sellerBarcode,
+    html_content=html_content
+  )
+  smartstoreChannelProductNo =  product_instance.add_product().json()['smartstoreChannelProductNo']
 
-salePrice = smart_store_price
+  # 파일에 originProductNo와 amazon_url 저장
+  with open('아마존url저장.txt', 'w') as f:
+    f.write(smartstoreChannelProductNo)
+    f.write(' : ')
+    f.write(amazon_url)
+    f.write('\n')
 
-# 상품 추가
-product_instance = AddProductToNSS(
-  telephoneNumber=telephone_number,
-  bearer_token= bearer_token,
-  name=productTitle,
-  leafCategoryId=leafCategoryId,
-  imageUrl=naver_image_url,
-  salePrice=salePrice,
-  importer=importer,
-  sellerBarcode=sellerBarcode,
-  html_content=html_content
-)
-smartstoreChannelProductNo = product_instance.add_product().json()['smartstoreChannelProductNo']
-
-# 파일에 originProductNo와 amazon_url 저장
-with open('아마존url저장.txt', 'w') as f:
-  f.write(smartstoreChannelProductNo)
-  f.write(' : ')
-  f.write(amazon_url)
-  f.write('\n')
+if __name__ == "__main__":
+    if len(sys.argv) == 4:
+        main(sys.argv[1], sys.argv[2], sys.argv[3])
+    else:
+        print("Invalid arguments")
