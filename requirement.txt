@@ -1,9 +1,8 @@
 bcrypt
 pybase64
-dotenv
-os
-request
-json
-time
-urllib.parse
-io
+python-dotenv
+requests
+urllib3
+selenium
+beautifulsoup4
+flask
