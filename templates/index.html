@@ -7,6 +7,13 @@
   <title>Amazon Product to Naver Smart Store</title>
   <!-- 부트스트랩 CSS 추가 -->
   <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- 부트스트랩 JS, Popper.js, and jQuery 추가 -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
 </head>
 
 <body>
@@ -25,14 +32,40 @@
         <label for="leafCategoryID">Leaf Category ID:</label>
         <input type="text" class="form-control" id="leafCategoryID" name="leafCategoryID">
       </div>
+      <input type="hidden" id="selectedCategoryId" name="leafCategoryID">
       <button type="submit" class="btn btn-primary">Submit</button>
     </form>
   </div>
 
-  <!-- 부트스트랩 JS, Popper.js, and jQuery 추가 -->
-  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <script>
+    $(document).ready(function ()
+    {
+      $("#leafCategoryID").autocomplete({
+        source: function (request, response)
+        {
+          $.getJSON("/search_category", { query: request.term }, function (data)
+          {
+            response($.map(data, function (item)
+            {
+              return {
+                label: item.wholeCategoryName, // 사용자에게 보여줄 라벨
+                value: item.id // 내부적으로 사용할 값
+              };
+            }));
+          });
+        },
+        minLength: 2, // 최소 글자 수 제한
+        select: function (event, ui)
+        {
+          // 라벨로 입력 필드를 채움
+          $("#leafCategoryID").val(ui.item.label);
+          // 숨겨진 입력 필드에 카테고리 ID 저장
+          $("#selectedCategoryId").val(ui.item.value);
+          return false; // 기본 이벤트 및 기본 동작을 취소
+        }
+      });
+    });
+  </script>
 </body>
 
 </html>
