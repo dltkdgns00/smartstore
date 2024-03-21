@@ -11,8 +11,8 @@ class Calculator:
         self.upper_limit = 200
 
     def calculate_lb(self, dimensions):
+        base_price = 10
         if self.weight_unit == "ounces":
-            base_price = 10
             if dimensions <= 166:
                 return base_price
             else:

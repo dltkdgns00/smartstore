@@ -6,12 +6,17 @@ class ExtractProduct:
 
   @staticmethod
   def escapeUnicode(product_info):
-    cleaned_product_info = {}
-    for key, value in product_info.items():
-        cleaned_key = key.replace('\u200e', '')
-        cleaned_value = value.replace('\u200e', '')
-        cleaned_product_info[cleaned_key] = cleaned_value
-    return cleaned_product_info
+      cleaned_product_info = {}
+      if product_info is not None:  # 예외 처리 추가
+          for key, value in product_info.items():
+              cleaned_key = key.replace('\u200e', '')
+              if value is not None:  # 예외 처리 추가
+                  cleaned_value = value.replace('\u200e', '')
+              else:
+                  cleaned_value = None
+              cleaned_product_info[cleaned_key] = cleaned_value
+      return cleaned_product_info
+
   
   @staticmethod
   def remove_control_characters(text):
@@ -25,7 +30,13 @@ class ExtractProduct:
         cleaned_value = self.remove_control_characters(value).strip()
         cleaned_data[cleaned_key] = cleaned_value
     return cleaned_data
-  
+
+  def extract_numbers_from_string(s):
+    # 숫자를 추출하는 정규 표현식 패턴
+    pattern = r'(\d+\.\d+|\d+)'
+    numbers = re.findall(pattern, s)
+    return [float(num) for num in numbers]
+
   # 제품명
   def getTitle(self):
     product_title = self.soup.find("title").text
@@ -35,17 +46,18 @@ class ExtractProduct:
     return product_name
   
   # 제품 가격
-  def getPrice(self):
-    price_tag = self.soup.find("span", class_="a-price-whole")
-    price = int(price_tag.text.strip().replace('.', ''))+1
+  # def getPrice(self):
+  #   price_tag = self.soup.find("span", class_="a-price-whole")
+  #   print(f"{price_tag} 입니다.")
+  #   price = int(price_tag.text.strip().replace('.', ''))+1
     
-    return price
+  #   return price
   
   # 제품 사진
   def getImage(self):
     image_tag = self.soup.find("img", id="landingImage")
     image_url = image_tag["src"]
-
+    
     return image_url
   
   # 제품 정보

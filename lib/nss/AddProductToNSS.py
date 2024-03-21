@@ -29,7 +29,7 @@ class AddProductToNSS:
                     },
                 },
                 "salePrice": self.salePrice,
-                "stockQuantity": 100,
+                "stockQuantity": 30, #재고수량
                 "deliveryInfo": {
                     "deliveryType": "DELIVERY",
                     "deliveryAttributeType": "NORMAL",
