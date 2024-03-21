@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Amazon 상품 추가</title>
+    <!-- 부트스트랩 CSS 추가 -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 부트스트랩 JS, Popper.js, and jQuery 추가 -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.2/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        form {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        input[type="submit"] {
+            width: 100%;
+            padding: 10px;
+            background-color: #007bff;
+            border: none;
+            border-radius: 4px;
+            color: #fff;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>스마트스토어 상품등록</h1>
+    <form action="/submit" method="post">
+        <label for="amazon_url">Amazon 상품 URL:</label>
+        <input type="text" id="amazon_url" name="amazon_url" placeholder="Amazon 상품의 URL을 입력하세요." required>
+        
+        <label for="product_title">상품명:</label>
+        <input type="text" id="product_title" name="product_title" placeholder="상품명을 입력하세요." required>
+
+        <label for="product_price">가격:</label>
+        <input type="text" id="product_price" name="product_price" placeholder="가격을 입력하세요." required>
+
+        <label for="leafCategoryID">카테고리 ID:</label>
+        <input type="text" id="leafCategoryID" name="leafCategoryID" placeholder="카테고리를 입력하세요." required>
+        
+        <input type="hidden" id="selectedCategoryId" name="CategoryID">
+        <input type="submit" value="상품등록">
+    </form>
+
+    <script>
+        $(document).ready(function ()
+        {
+          $("#leafCategoryID").autocomplete({
+            source: function (request, response)
+            {
+              $.getJSON("/search_category", { query: request.term }, function (data)
+              {
+                response($.map(data, function (item)
+                {
+                  return {
+                    label: item.wholeCategoryName, // 사용자에게 보여줄 라벨
+                    value: item.id // 내부적으로 사용할 값
+                  };
+                }));
+              });
+            },
+            minLength: 2, // 최소 글자 수 제한
+            select: function (event, ui)
+            {
+              // 라벨로 입력 필드를 채움
+              $("#leafCategoryID").val(ui.item.label);
+              // 숨겨진 입력 필드에 카테고리 ID 저장
+              $("#selectedCategoryId").val(ui.item.value);
+              return false; // 기본 이벤트 및 기본 동작을 취소
+            }
+          });
+        });
+    </script>
+</body>
+</html>

@@ -29,7 +29,7 @@ class AddProductToNSS:
                     },
                 },
                 "salePrice": self.salePrice,
-                "stockQuantity": 100,
+                "stockQuantity": 30, #재고수량
                 "deliveryInfo": {
                     "deliveryType": "DELIVERY",
                     "deliveryAttributeType": "NORMAL",
@@ -83,7 +83,7 @@ class AddProductToNSS:
             },
             "smartstoreChannelProduct": {
                 "naverShoppingRegistration": True,
-                "channelProductDisplayStatusType": "SUSPENSION"
+                "channelProductDisplayStatusType": "ON"
             }
         }
 
@@ -99,6 +99,7 @@ class AddProductToNSS:
         if response.status_code == 200:
             # 성공적인 응답 처리
             print("성공:", response.json())
+            return response.json()
         else:
             # 오류 응답 처리
             print("오류:", response.status_code, response.text)

@@ -11,8 +11,8 @@ class Calculator:
         self.upper_limit = 200
 
     def calculate_lb(self, dimensions):
+        base_price = 10
         if self.weight_unit == "ounces":
-            base_price = 10
             if dimensions <= 166:
                 return base_price
             else:
@@ -26,7 +26,7 @@ class Calculator:
     def calculate_taxAndvat(self, dimensions):
         # 관세
         if self.price > self.upper_limit:
-            tax = (self.price + self.dimensions) * self.exchange_rate * 0.13
+            tax = (self.price + dimensions) * self.exchange_rate * 0.13
         else:
             tax = 0
 

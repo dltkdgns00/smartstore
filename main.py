@@ -1,107 +1,157 @@
-import time
+import json
+from math import ceil
+from flask import Flask, jsonify, request, render_template
 from dotenv import load_dotenv
 import os
-import sys
-import requests
-
+import time
+from functools import reduce
+from operator import mul
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+from bs4 import BeautifulSoup
 from lib.crawling.Calculator import Calculator
 from lib.nss.UploadProductImage import ImageUploader
 from lib.nss.CreateESign import createESign
 from lib.nss.AddProductToNSS import AddProductToNSS
-from bs4 import BeautifulSoup
 from lib.crawling.ExtractProduct import ExtractProduct
 from lib.crawling.ProductDescription import ProductDescription
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
 
+def load_category_data(filepath):
+    categories = []
+    with open(filepath, 'r', encoding='utf-8') as file:
+        for line in file:
+            category = json.loads(line.strip())
+            categories.append(category)
+    return categories
+
+app = Flask(__name__)
+categories = load_category_data('./디지털,가전 카테고리.csv')  # CSV 파일 경로 지정
+
+@app.route('/search_category')
+def search_category():
+    query = request.args.get('query', '').lower()
+    results = [cat for cat in categories if query in cat['name'].lower() and cat['last'] == "True"]
+    return jsonify(results[:5])  # 상위 5개 결과만 반환
+    
 chrome_options = Options()
 chrome_options.add_argument('--headless')
 chrome_options.add_argument('--disable-gpu')
 
-amazon_url = sys.argv[1]
-# amazon_url = "https://www.amazon.com/Elgato-Stream-Deck-MK-2-Controller/dp/B09738CV2G?ref_=Oct_d_omwf_d_172456_4&pd_rd_w=Pbx0C&content-id=amzn1.sym.e1dd8637-4da2-4f16-81ea-1bd7ea3eed24&pf_rd_p=e1dd8637-4da2-4f16-81ea-1bd7ea3eed24&pf_rd_r=FK71VJX8X1YFJAFQZ8BQ&pd_rd_wg=GTBfu&pd_rd_r=b3e2a08e-8c62-4d1f-8eb3-c3a0214f1d74&pd_rd_i=B09738CV2G&th=1"
-
-productTitle = sys.argv[2]
-# productTitle = "엘가토 스트림 덱 MK.2 컨트롤러" # 제품명
-
-leafCategoryId = sys.argv[3]
-# leafCategoryId = "50002933" # 카테고리 ID
-
 load_dotenv()
 
-# 환경 변수 불러오기
-client_id = os.getenv('CLIENT_ID')
-client_secret = os.getenv('CLIENT_SECRET')
-telephone_number = os.getenv('TELEPHONE_NUMBER')
+smartstoreChannelProductNo = None
+amazon_url = None
 
-# 토큰 요청
-eSign_instance = createESign(client_id, client_secret)
-bearer_token = eSign_instance.get_token()
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-# 크롤링
-with webdriver.Chrome(options=chrome_options) as driver:
-  driver.get(amazon_url)
-  time.sleep(8)
-  soup = BeautifulSoup(driver.page_source, "html.parser")
+@app.route('/submit', methods=['POST'])
+def submit():
+    global smartstoreChannelProductNo, amazon_url
+    amazon_url = request.form['amazon_url']
+    product_title = request.form['product_title']
+    product_price = request.form['product_price']
+    leafCategoryID = request.form['CategoryID']
+    
+    # amazon_url 중복방지
+    existing_urls = set()
+    with open('data.txt', 'r') as f:
+        for line in f:
+            url = line.split(' : ')[1].strip()
+            existing_urls.add(url)
 
-extractProduct = ExtractProduct(soup)
+    # 새로 입력된 URL이 이미 존재하는지 확인
+    if amazon_url in existing_urls:
+        return "이미 등록된 URL입니다."
+    
+    # 환경 변수 불러오기
+    client_id = os.getenv('CLIENT_ID')
+    client_secret = os.getenv('CLIENT_SECRET')
+    telephone_number = os.getenv('TELEPHONE_NUMBER')
 
-# productTitle = extractProduct.getTitle() # 제품명
-image_url = extractProduct.getImage() # 제품이미지
-productPrice = extractProduct.getPrice() # 제품가격
-productInfo = extractProduct.getInfo()  # 제품정보
+    # 토큰 요청
+    eSign_instance = createESign(client_id, client_secret)
+    bearer_token = eSign_instance.get_token()
 
-productDescription = ProductDescription(amazon_url)
-html_content = productDescription.generateHtml()
+    # 크롤링
+    with webdriver.Chrome(options=chrome_options) as driver:
+        driver.get(amazon_url)
+        wait = WebDriverWait(driver, 10)
+        wait.until(EC.presence_of_element_located((By.CLASS_NAME, "a-price-whole")))
+        soup = BeautifulSoup(driver.page_source, "html.parser")
+        
+    extract_product = ExtractProduct(soup)
+    image_url = extract_product.getImage()
+    
+    product_price = float(product_price)
+    
+    product_info = extract_product.getInfo()
+    
+    product_description = ProductDescription(amazon_url)
+    html_content = product_description.generateHtml()
 
-# 이미지 네이버 업로드 후 URL 받아오기
-uploader = ImageUploader(bearer_token)
+    # 이미지 네이버 업로드 후 URL 받아오기
+    uploader = ImageUploader(bearer_token)
+    naver_image_url = uploader.return_naver_image_url(image_url)
 
-naver_image_url = uploader.return_naver_image_url(image_url)
+    importer = product_info['제조사']
+    seller_barcode = product_info['ASIN']
 
-# 본문 데이터 변수
-# leafCategoryId = "50000003" # 카테고리 ID
-importer = productInfo['제조사'] # 수입사
-sellerBarcode = productInfo['ASIN'] # ASIN
+    profit = round(product_price * 0.15, 2)
+    
+    item_weight = product_info['품목 무게']
+    if item_weight:
+        weight = item_weight.split()
+        dimensions = int(ceil(float(weight[0])))
+        weight_unit = weight[1]
+    else:
+        dimensions = int(reduce(mul, ExtractProduct.extract_numbers_from_string(product_info['제품 크기'])))
+        
+    calculator = Calculator(
+        weight_unit=weight_unit,
+        price=product_price,
+        profit=profit
+    )
+    
+    dimensions = calculator.calculate_lb(dimensions)
+    print(f"국제배송비는 {dimensions} 입니다.")
+    
+    tax, vat = calculator.calculate_taxAndvat(dimensions)
+    print(f"관세 : {tax}, 부가세 : {vat} 입니다.")
+    
+    smart_store_price = calculator.calculate_ssp(
+        dimensions=dimensions,
+        tax=tax,
+        vat=vat
+    )
 
-# 판매이익
-profit = round(productPrice * 0.15, 2)
+    sale_price = smart_store_price
 
-# 국제배송비
-weight = productInfo['품목 무게'].split()
-weight_value = weight[0]
-weight_unit = weight[1]
+    product_instance = AddProductToNSS(
+        telephoneNumber=telephone_number,
+        bearer_token=bearer_token,
+        name=product_title,
+        leafCategoryId=leafCategoryID,
+        imageUrl=naver_image_url,
+        salePrice=sale_price,
+        importer=importer,
+        sellerBarcode=seller_barcode,
+        html_content=html_content
+    )
+    smartstoreChannelProductNo = product_instance.add_product()['smartstoreChannelProductNo']
 
-calculator = Calculator(
-  weight_unit=weight_unit,
-  price=productPrice,
-  profit=profit
-)
+    # 파일에 originProductNo와 amazon_url 저장
+    with open('data.txt', 'a') as f:
+        f.write(f'{smartstoreChannelProductNo}')
+        f.write(' : ')
+        f.write(amazon_url)
+        f.write('\n')
 
-dimensions = eval(productInfo['제품 크기'].replace(' ', '').replace('x', '*'))
-dimensions = calculator.calculate_lb(dimensions)
+    return "상품이 성공적으로 추가되었습니다!"
 
-tax, vat = calculator.calculate_taxAndvat(dimensions)
-
-# 스마트스토어 판매가
-smart_store_price = calculator.calculate_ssp(
-  dimensions=dimensions,
-  tax=tax,
-  vat=vat
-)
-
-salePrice = smart_store_price
-
-# 상품 추가
-product_instance = AddProductToNSS(
-  telephoneNumber=telephone_number,
-  bearer_token= bearer_token,
-  name=productTitle,
-  leafCategoryId=leafCategoryId,
-  imageUrl=naver_image_url,
-  salePrice=salePrice,
-  importer=importer,
-  sellerBarcode=sellerBarcode,
-  html_content=html_content
-)
-product_instance.add_product()
+if __name__ == '__main__':
+    app.run(debug=True)
